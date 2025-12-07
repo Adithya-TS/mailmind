@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Summary - {{ timestamp }}{% endblock %}
+
+{% block content %}
+<div class="header">
+    <div class="nav">
+        <div>
+            <h1>📧 MailMind</h1>
+            <p>Email Summary</p>
+        </div>
+        <div>
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">← Back to Home</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h2 style="margin-bottom: 10px;">{{ filename }}</h2>
+    <p style="color: #666; margin-bottom: 20px;">
+        Generated: {{ timestamp.replace('_', ' ').replace('-', '/') }}
+    </p>
+    
+    <div class="summary-content">{{ content }}</div>
+</div>
+{% endblock %}

@@ -1,0 +1,150 @@
+╔══════════════════════════════════════════════════════════════╗
+║              MailMind - START HERE                           ║
+║         (No credentials.json needed!)                        ║
+╚══════════════════════════════════════════════════════════════╝
+
+📝 STEP 1: Edit .env File
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Open: .env
+
+Replace these with your actual Google OAuth credentials:
+
+  GOOGLE_CLIENT_ID=your_google_client_id_here
+  GOOGLE_CLIENT_SECRET=your_google_client_secret_here
+
+Example:
+  GOOGLE_CLIENT_ID=123456-abc.apps.googleusercontent.com
+  GOOGLE_CLIENT_SECRET=GOCSPX-your_secret_here
+
+Note: Get these from Google Cloud Console > Credentials
+
+
+✅ STEP 2: Already Configured!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ GEMINI_API_KEY is already set
+✓ FLASK_SECRET_KEY is already set
+
+
+📦 STEP 3: Install Dependencies
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Run:
+  pip install -r requirements.txt
+
+
+🚀 STEP 4: Start the Server
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Run:
+  python app.py
+
+
+🌐 STEP 5: Open Browser
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Go to: http://localhost:5000
+
+
+🔐 STEP 6: Sign In with Google
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Click "Sign in with Google" button
+2. Choose your Google account
+3. Grant permissions
+4. Done!
+
+
+✨ STEP 7: Generate Summary
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Click "Generate Summary" button
+2. Wait for AI to process
+3. View your prioritized email summary!
+
+
+╔══════════════════════════════════════════════════════════════╗
+║                  WHY THIS IS BETTER                          ║
+╚══════════════════════════════════════════════════════════════╝
+
+Old Way (credentials.json):
+  ❌ Download JSON file from Google Cloud
+  ❌ Complex server-side OAuth flow
+  ❌ Redirect URI configuration
+  ❌ Token management complexity
+
+New Way (.env only):
+  ✅ Just add Client ID and Secret to .env
+  ✅ Google Sign-In button handles OAuth
+  ✅ Clean, modern authentication
+  ✅ Works like Gmail, YouTube, etc.
+
+
+╔══════════════════════════════════════════════════════════════╗
+║                    API ENDPOINTS                             ║
+╚══════════════════════════════════════════════════════════════╝
+
+Authentication:
+  POST /api/auth/google        → Verify Google token
+
+Email Summary:
+  POST /api/generate           → Generate summary
+
+Pages:
+  GET  /                       → Home page
+  GET  /logout                 → Logout
+  GET  /summary/<filename>     → View past summary
+
+
+╔══════════════════════════════════════════════════════════════╗
+║                  GOOGLE CLOUD SETUP                          ║
+╚══════════════════════════════════════════════════════════════╝
+
+In Google Cloud Console > Credentials:
+
+Application type: Web application
+
+Authorized JavaScript origins:
+  http://localhost:5000
+
+Authorized redirect URIs:
+  http://localhost:5000
+
+(That's it! No /oauth2callback needed!)
+
+
+╔══════════════════════════════════════════════════════════════╗
+║                    QUICK TEST                                ║
+╚══════════════════════════════════════════════════════════════╝
+
+1. Edit .env with your Client ID and Secret
+2. Run: python app.py
+3. Open: http://localhost:5000
+4. Click "Sign in with Google"
+5. Click "Generate Summary"
+6. Done! 🎉
+
+
+╔══════════════════════════════════════════════════════════════╗
+║                  TROUBLESHOOTING                             ║
+╚══════════════════════════════════════════════════════════════╝
+
+❌ "GOOGLE_CLIENT_ID not set"
+   → Add it to .env file
+
+❌ Google button doesn't appear
+   → Check browser console
+   → Verify Client ID is correct
+   → Use http://localhost:5000 (not 127.0.0.1)
+
+❌ "Invalid token"
+   → Check Client ID matches Google Cloud Console
+   → Make sure OAuth client is enabled
+
+❌ "Not authenticated"
+   → Sign in with Google first
+   → Enable cookies in browser
+
+
+That's it! Much simpler than before! 🚀

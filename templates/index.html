@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}MailMind - AI Email Summarizer{% endblock %}
+
+{% block extra_head %}
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+    const GOOGLE_CLIENT_ID = "{{ google_client_id }}";
+    let tokenClient;
+    let accessToken = null;
+    
+    // Initialize Google OAuth client
+    function initializeGoogleOAuth() {
+        tokenClient = google.accounts.oauth2.initTokenClient({
+            client_id: GOOGLE_CLIENT_ID,
+            scope: 'https://www.googleapis.com/auth/gmail.readonly openid email profile',
+            callback: handleOAuthResponse,
+        });
+    }
+    
+    // Load OAuth client when page loads
+    window.onload = function() {
+        if (typeof google !== 'undefined') {
+            initializeGoogleOAuth();
+        }
+    };
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="header">
+    <div class="nav">
+        <div>
+            <h1>📧 MailMind</h1>
+            <p>AI-Powered Email Summarization</p>
+        </div>
+        <div>
+            {% if is_authenticated %}
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    {% if user.picture %}
+                    <img src="{{ user.picture }}" alt="{{ user.name }}" style="width: 32px; height: 32px; border-radius: 50%;">
+                    {% endif %}
+                    <span class="status status-success">✓ {{ user.name }}</span>
+                    <a href="{{ url_for('logout') }}" class="btn btn-secondary">Logout</a>
+                </div>
+            {% else %}
+                <span class="status status-warning">⚠ Not Connected</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h2 style="margin-bottom: 20px;">Generate Email Summary</h2>
+    
+    {% if not is_authenticated %}
+        <p style="margin-bottom: 20px; color: #666;">
+            Sign in with Google to start generating AI-powered email summaries.
+        </p>
+        <button onclick="requestGoogleAuth()" class="btn btn-primary">
+            🔐 Sign in with Google
+        </button>
+    {% else %}
+        <p style="margin-bottom: 20px; color: #666;">
+            Click the button below to fetch your 20 most recent emails and generate an AI summary with priority categorization.
+        </p>
+        <button onclick="generateSummary()" class="btn btn-primary" id="generateBtn">
+            ✨ Generate Summary
+        </button>
+        
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Fetching emails and generating summary...</p>
+        </div>
+        
+        <div id="result"></div>
+    {% endif %}
+</div>
+
+{% if past_summaries %}
+<div class="card">
+    <h2 style="margin-bottom: 20px;">Past Summaries</h2>
+    <ul class="summary-list">
+        {% for summary in past_summaries %}
+        <li class="summary-item">
+            <div>
+                <strong>{{ summary.filename }}</strong>
+                <div class="summary-timestamp">{{ summary.timestamp.replace('_', ' ').replace('-', '/') }}</div>
+            </div>
+            <a href="{{ url_for('view_summary', filename=summary.filename) }}" class="btn btn-secondary">View</a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Request Google OAuth authorization
+function requestGoogleAuth() {
+    if (tokenClient) {
+        tokenClient.requestAccessToken({prompt: 'consent'});
+    } else {
+        alert('Google OAuth client not initialized. Please refresh the page.');
+    }
+}
+
+// Handle OAuth response
+async function handleOAuthResponse(response) {
+    if (response.error) {
+        alert('Authorization failed: ' + response.error);
+        return;
+    }
+    
+    accessToken = response.access_token;
+    
+    try {
+        // Get user info using the access token
+        const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+            headers: {
+                'Authorization': `Bearer ${accessToken}`
+            }
+        });
+        
+        const userInfo = await userInfoResponse.json();
+        
+        // Send tokens to backend
+        const result = await fetch('/api/auth/google', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                id_token: accessToken,  // Using access token as ID token for now
+                access_token: accessToken
+            })
+        });
+        
+        const data = await result.json();
+        
+        if (result.ok) {
+            // Reload page to show authenticated state
+            location.reload();
+        } else {
+            alert('Authentication failed: ' + data.error);
+        }
+    } catch (error) {
+        alert('Authentication error: ' + error.message);
+    }
+}
+
+async function generateSummary() {
+    const btn = document.getElementById('generateBtn');
+    const loading = document.getElementById('loading');
+    const result = document.getElementById('result');
+    
+    // Show loading state
+    btn.disabled = true;
+    loading.style.display = 'block';
+    result.innerHTML = '';
+    
+    try {
+        const response = await fetch('/api/generate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            result.innerHTML = `
+                <div class="success">
+                    ✓ Successfully generated summary for ${data.email_count} emails!
+                    <br>Saved to: ${data.file_path}
+                </div>
+                <div class="summary-content">${escapeHtml(data.summary)}</div>
+            `;
+            
+            // Reload page after 2 seconds to show new summary in list
+            setTimeout(() => location.reload(), 2000);
+        } else {
+            result.innerHTML = `
+                <div class="error">
+                    ✗ Error: ${escapeHtml(data.error)}
+                </div>
+            `;
+        }
+    } catch (error) {
+        result.innerHTML = `
+            <div class="error">
+                ✗ Network error: ${escapeHtml(error.message)}
+            </div>
+        `;
+    } finally {
+        btn.disabled = false;
+        loading.style.display = 'none';
+    }
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+</script>
+{% endblock %}

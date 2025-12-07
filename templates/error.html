@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Error - MailMind{% endblock %}
+
+{% block content %}
+<div class="header">
+    <div class="nav">
+        <div>
+            <h1>📧 MailMind</h1>
+            <p>Error</p>
+        </div>
+        <div>
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">← Back to Home</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="error">
+        <h2 style="margin-bottom: 10px;">{{ error }}</h2>
+        <p>{{ message }}</p>
+    </div>
+    
+    <div style="margin-top: 20px;">
+        <a href="{{ url_for('index') }}" class="btn btn-primary">Go to Home</a>
+    </div>
+</div>
+{% endblock %}
